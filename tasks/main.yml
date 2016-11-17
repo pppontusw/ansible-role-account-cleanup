@@ -1,0 +1,19 @@
+- name: clear ssh keys
+  become: yes
+  authorized_key: user={{item.name}} key={{item.pubkey}} state=absent
+  with_items: "{{clear_ssh_keys|default([])}}"
+
+- name: remove account from sudo
+  become: yes
+  lineinfile:
+    dest: /etc/sudoers
+    regexp: '^{{ item }}'
+    state: absent
+    validate: '/usr/sbin/visudo -cf %s'
+  with_items: "{{clear_sudoers|default([])}}"
+
+- name: remove account
+  become: yes
+  user: name={{item}} shell=/bin/bash state=absent
+  with_items: "{{clear_accounts|default([])}}"
+  
